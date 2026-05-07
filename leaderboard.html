@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TurnGate: Performance Leaderboard & Results</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- MathJax for LaTeX Rendering -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+    <!-- Mobile Header -->
+    <header class="site-header mobile-header">
+        <div class="navbar">
+            <a href="index.html" class="logo">
+                <div class="logo-mark">TG</div>
+                <span>TurnGate</span>
+            </a>
+            <button class="nav-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="site-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar-nav">
+            <a href="index.html" class="logo">
+                <div class="logo-mark">TG</div>
+                <span>TurnGate</span>
+            </a>
+            <nav class="side-nav">
+                <h3>Navigation</h3>
+                <ul>
+                    <li><a href="index.html" class="nav-link">Overview</a></li>
+                    <li><a href="comparison.html" class="nav-link">Examples</a></li>
+                    <li><a href="leaderboard.html" class="nav-link is-active">Results</a></li>
+                </ul>
+                <h3>On this page</h3>
+                <ul>
+                    <li><a href="#main-results" class="nav-link">Main MTID Results</a></li>
+                    <li><a href="#cross-domain" class="nav-link">Cross-Domain Generalization</a></li>
+                    <li><a href="#robustness" class="nav-link">Online Robustness</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="https://github.com/Graph-COM/TurnGate" class="sidebar-link" target="_blank">
+                    <i class="fab fa-github"></i> Code
+                </a>
+                <a href="https://arxiv.org/abs/" class="sidebar-link" target="_blank">
+                    <i class="far fa-file-pdf"></i> Paper (arXiv)
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article class="article-container">
+                <header class="article-header">
+                    <div class="date-tag">
+                        <span>May 2026</span>
+                        <span class="tag">Preprint</span>
+                    </div>
+                    <h1 class="article-title">Experimental Evaluation</h1>
+                    <p class="article-abstract">
+                        We evaluate TurnGate on the Multi-Turn Intent Dataset (MTID), measuring its ability to detect hidden malicious intent while preserving benign utility. Our results show that TurnGate achieves the best overall safety-utility trade-off compared to prompt-based monitors and off-the-shelf guardrails.
+                    </p>
+                </header>
+
+                <section id="main-results" class="content-section reveal">
+                    <h2 class="section-title">Main Offline Results</h2>
+                    <p class="section-subtitle">Comprehensive metrics on the MTID test split.</p>
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Model</th>
+                                    <th class="num">Benign Score $\uparrow$</th>
+                                    <th class="num">Miss $\downarrow$</th>
+                                    <th class="num">Early $\downarrow$</th>
+                                    <th class="num">$\ell_1 \downarrow$</th>
+                                    <th class="num">Acc. ($\phi_1$) $\uparrow$</th>
+                                    <th class="num">Harm Score $\phi_2 \uparrow$</th>
+                                    <th class="num">F1 $\phi_2 \uparrow$</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="group-row"><td colspan="9">Baselines</td></tr>
+                                <tr><td>Vanilla LLM Monitor</td><td>Qwen3-4B</td><td class="num">0.753</td><td class="num">0.708</td><td class="num">0.168</td><td class="num">1.31</td><td class="num">0.124</td><td class="num">0.211</td><td class="num">0.330</td></tr>
+                                <tr><td>Sequential Monitor</td><td>GPT-5.2</td><td class="num">0.648</td><td class="num">0.412</td><td class="num">0.296</td><td class="num">1.02</td><td class="num">0.292</td><td class="num">0.428</td><td class="num">0.516</td></tr>
+                                <tr><td>Intention Analysis</td><td>GPT-OSS-120B</td><td class="num">0.023</td><td class="num">0.045</td><td class="num">0.638</td><td class="num">1.36</td><td class="num">0.317</td><td class="num">0.574</td><td class="num">0.045</td></tr>
+                                <tr class="group-row"><td colspan="9">Guardrail-based baselines</td></tr>
+                                <tr><td>Llama Guard</td><td>Llama-3-8B</td><td class="num">0.998</td><td class="num">0.998</td><td class="num">0.001</td><td class="num">0.33</td><td class="num">0.002</td><td class="num">0.002</td><td class="num">0.005</td></tr>
+                                <tr><td>Qwen Guard</td><td>Qwen3-8B</td><td class="num">0.863</td><td class="num">0.788</td><td class="num">0.092</td><td class="num">0.83</td><td class="num">0.120</td><td class="num">0.159</td><td class="num">0.269</td></tr>
+                                <tr class="group-row"><td colspan="9">Trainable Methods</td></tr>
+                                <tr><td>Naive-SFT</td><td>Qwen3-4B</td><td class="num">0.930</td><td class="num">0.738</td><td class="num">0.098</td><td class="num">0.76</td><td class="num">0.163</td><td class="num">0.224</td><td class="num">0.361</td></tr>
+                                <tr><td>Reweighted-SFT</td><td>Qwen3-4B</td><td class="num">0.840</td><td class="num">0.379</td><td class="num">0.278</td><td class="num">0.90</td><td class="num">0.343</td><td class="num">0.479</td><td class="num">0.610</td></tr>
+                                <tr><td><strong>TurnGate (Ours)</strong></td><td>Qwen3-4B</td><td class="num">0.834</td><td class="num">0.177</td><td class="num">0.409</td><td class="num">1.02</td><td class="num">0.414</td><td class="num">0.602</td><td class="num"><strong>0.699</strong></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card" style="margin-top: 24px;">
+                        <h3>Metric Definitions</h3>
+                        <div class="pill-list" style="flex-direction: column; align-items: flex-start; gap: 12px;">
+                            <div class="pill" style="border-radius: 8px; width: 100%; text-align: left;"><strong>Benign Score:</strong> Pass-through rate on benign traffic ($1 - \text{FPR}$). Measures utility preservation.</div>
+                            <div class="pill" style="border-radius: 8px; width: 100%; text-align: left;"><strong>Miss:</strong> Rate of harmful trajectories allowed to complete without intervention ($\eta_\pi > t^*$). Represents a safety breach.</div>
+                            <div class="pill" style="border-radius: 8px; width: 100%; text-align: left;"><strong>Acc ($\phi_1$):</strong> Exact closure accuracy. The percentage of trajectories blocked exactly at the first sufficient turn ($\eta_\pi = t^*$).</div>
+                            <div class="pill" style="border-radius: 8px; width: 100%; text-align: left;"><strong>Harmful Score $\phi_2$:</strong> Time-sensitive safety metric; assigns $1.0$ for exact block, $\eta_\pi/t^*$ for early block, and $0.0$ for miss.</div>
+                            <div class="pill" style="border-radius: 8px; width: 100%; text-align: left;"><strong>F1 $\phi_2$:</strong> Overall trade-off summary; the harmonic mean of Benign Score and Harmful Score $\phi_2$.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="cross-domain" class="content-section reveal">
+                    <h2 class="section-title">Cross-Domain Generalization</h2>
+                    <p class="section-subtitle">Zero-shot evaluation across different risk categories (Chemistry ↔ Cybersecurity).</p>
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Source Domain</th>
+                                    <th>Target Domain</th>
+                                    <th class="num">Benign Score $\uparrow$</th>
+                                    <th class="num">Harm Score $\phi_2 \uparrow$</th>
+                                    <th class="num">F1 $\phi_2 \uparrow$</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Intention Analysis</td><td>Chemistry</td><td>Cybersecurity</td><td class="num">0.808</td><td class="num">0.297</td><td class="num">0.435</td></tr>
+                                <tr><td><strong>TurnGate</strong></td><td>Chemistry</td><td>Cybersecurity</td><td class="num">0.863</td><td class="num">0.397</td><td class="num"><strong>0.543</strong></td></tr>
+                                <tr class="divider-row"><td colspan="6"></td></tr>
+                                <tr><td>Intention Analysis</td><td>Cybersecurity</td><td>Chemistry</td><td class="num">0.894</td><td class="num">0.329</td><td class="num">0.481</td></tr>
+                                <tr><td><strong>TurnGate</strong></td><td>Cybersecurity</td><td>Chemistry</td><td class="num">0.739</td><td class="num">0.474</td><td class="num"><strong>0.578</strong></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="robustness" class="content-section reveal">
+                    <h2 class="section-title">Online Robustness</h2>
+                    <p class="section-subtitle">Attack Success Rate (ASR) against adaptive tree-search attackers.</p>
+                    <div class="grid-2">
+                        <div class="card">
+                            <h3>Adaptive Attack Robustness</h3>
+                            <p>TurnGate remains substantially more robust in closed-loop online interaction against strong adaptive attackers. Even as the attacker budget increases, TurnGate maintains a lower ASR than all baselines.</p>
+                            <div class="figure-container" style="margin-top: 20px;">
+                                <img src="figs/fs_vs_iteration.png" alt="Robustness iteration plot" class="figure-img">
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>OOD Generalization</h3>
+                            <p>Evaluation at attacker iteration budget $i=5$ shows that TurnGate generalizes effectively to held-out risk categories, target models (Gemini-3.1-Pro), and different attacker pipelines.</p>
+                            <div class="figure-container" style="margin-top: 20px;">
+                                <img src="figs/online_generalization.png" alt="OOD generalization plot" class="figure-img">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </article>
+
+            <footer class="footer">
+                <p>&copy; 2026 TurnGate Research Team. All Rights Reserved.</p>
+            </footer>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

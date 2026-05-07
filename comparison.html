@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TurnGate: Interactive Trajectory Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Mobile Header -->
+    <header class="site-header mobile-header">
+        <div class="navbar">
+            <a href="index.html" class="logo">
+                <div class="logo-mark">TG</div>
+                <span>TurnGate</span>
+            </a>
+            <button class="nav-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="site-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar-nav">
+            <a href="index.html" class="logo">
+                <div class="logo-mark">TG</div>
+                <span>TurnGate</span>
+            </a>
+            <nav class="side-nav">
+                <h3>Navigation</h3>
+                <ul>
+                    <li><a href="index.html" class="nav-link">Overview</a></li>
+                    <li><a href="comparison.html" class="nav-link is-active">Examples</a></li>
+                    <li><a href="leaderboard.html" class="nav-link">Results</a></li>
+                </ul>
+                <h3>On this page</h3>
+                <ul>
+                    <li><a href="#benign-case" class="nav-link">Benign Trajectory</a></li>
+                    <li><a href="#harmful-case" class="nav-link">Harmful Trajectory</a></li>
+                    <li><a href="#analysis" class="nav-link">Trajectory Analysis</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="https://github.com/Graph-COM/TurnGate" class="sidebar-link" target="_blank">
+                    <i class="fab fa-github"></i> Code
+                </a>
+                <a href="https://arxiv.org/abs/" class="sidebar-link" target="_blank">
+                    <i class="far fa-file-pdf"></i> Paper (arXiv)
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article class="article-container">
+                <header class="article-header">
+                    <div class="date-tag">
+                        <span>May 2026</span>
+                        <span class="tag">Preprint</span>
+                    </div>
+                    <h1 class="article-title">Benign vs. Harmful Interactions</h1>
+                    <p class="article-abstract">
+                        TurnGate is designed to distinguish between safe technical exploration and adversarial information gathering. Below we analyze two trajectories from the MTID dataset to demonstrate TurnGate's sequential intervention logic.
+                    </p>
+                </header>
+
+                <section id="benign-case" class="content-section reveal">
+                    <h2 class="section-title">Case 1: Benign Technical Exploration</h2>
+                    <p class="section-subtitle">A safe request for chemical properties and safety protocols.</p>
+                    <div class="figure-container">
+                        <img src="figs/benign_example.png" alt="Benign trajectory" class="figure-img">
+                        <figcaption>
+                            <strong>Figure: Benign interaction.</strong> Despite the use of technical chemistry terminology, the conversation remains focused on safe, educational content. TurnGate correctly allows the full dialogue to pass.
+                        </figcaption>
+                    </div>
+                    <div class="card" style="margin-top: 24px; border-left: 4px solid var(--success);">
+                        <p><strong>Defender Decision:</strong> <span style="color:var(--success); font-weight:700;">PASS (Correct)</span></p>
+                        <p style="font-size: 16px; margin-top: 8px;">The sequential state never reaches the threshold for enabling misuse, preventing over-refusal of safe technical traffic.</p>
+                    </div>
+                </section>
+
+                <section id="harmful-case" class="content-section reveal">
+                    <h2 class="section-title">Case 2: Distributed Malicious Intent</h2>
+                    <p class="section-subtitle">An adaptive attack attempting to synthesize restricted capabilities.</p>
+                    <div class="figure-container">
+                        <img src="figs/harmful_example.png" alt="Harmful trajectory" class="figure-img">
+                        <figcaption>
+                            <strong>Figure: Harmful interaction.</strong> The attacker uses a multi-turn strategy to extract sensitive technical details. TurnGate identifies the <strong>closure turn</strong> (Turn 4) where the response would become harm-sufficient.
+                        </figcaption>
+                    </div>
+                    <div class="card" style="margin-top: 24px; border-left: 4px solid var(--danger);">
+                        <p><strong>Defender Decision:</strong> <span style="color:var(--danger); font-weight:700;">BLOCK at Turn 4 (Accurate)</span></p>
+                        <p style="font-size: 16px; margin-top: 8px;">TurnGate detects that the cumulative information delivered in the previous turns, combined with the Turn 4 response, enables the harmful objective.</p>
+                    </div>
+                </section>
+
+                <section id="analysis" class="content-section reveal">
+                    <h2 class="section-title">Trajectory Analysis</h2>
+                    <p>
+                        Traditional monitors often struggle with these cases because they either look at turns in isolation (missing the cumulative risk) or use brittle heuristics (leading to over-refusal of technical terms).
+                    </p>
+                    <div class="highlights-grid">
+                        <div class="highlight-card">
+                            <h3>Context Awareness</h3>
+                            <p>TurnGate maintains the full conversation state to track the synthesis of restricted information across turns.</p>
+                        </div>
+                        <div class="highlight-card">
+                            <h3>Response Aware</h3>
+                            <p>By inspecting the candidate response <em>before</em> delivery, TurnGate can judge if that specific response completes the harmful intent.</p>
+                        </div>
+                    </div>
+                </section>
+            </article>
+
+            <footer class="footer">
+                <p>&copy; 2026 TurnGate Research Team. All Rights Reserved.</p>
+            </footer>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

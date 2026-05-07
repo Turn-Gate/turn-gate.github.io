@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="TurnGate: Detecting Malicious Intent in Multi-turn Dialogue. A turn-level monitor that identifies the earliest turn where interaction becomes sufficient for harm.">
+    <meta name="keywords" content="LLM, safety, multi-turn attack, malicious intent, TurnGate, AI safety">
+    <meta name="author" content="TurnGate Research Team">
+    <title>TurnGate: Detecting Malicious Intent in Multi-turn Dialogue</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- MathJax for LaTeX Rendering -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+    <!-- Mobile Header -->
+    <header class="site-header mobile-header">
+        <div class="navbar">
+            <a href="index.html" class="logo">
+                <div class="logo-mark">TG</div>
+                <span>TurnGate</span>
+            </a>
+            <button class="nav-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="site-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar-nav">
+            <a href="index.html" class="logo">
+                <div class="logo-mark">TG</div>
+                <span>TurnGate</span>
+            </a>
+            <nav class="side-nav">
+                <h3>Navigation</h3>
+                <ul>
+                    <li><a href="index.html" class="nav-link is-active">Overview</a></li>
+                    <li><a href="comparison.html" class="nav-link">Examples</a></li>
+                    <li><a href="leaderboard.html" class="nav-link">Results</a></li>
+                </ul>
+                <h3>On this page</h3>
+                <ul>
+                    <li><a href="#abstract" class="nav-link">Abstract</a></li>
+                    <li><a href="#introduction" class="nav-link">Sequential Logic</a></li>
+                    <li><a href="#dataset" class="nav-link">MTID Dataset</a></li>
+                    <li><a href="#results" class="nav-link">Key Results</a></li>
+                    <li><a href="#methodology" class="nav-link">Methodology</a></li>
+                    <li><a href="#citation" class="nav-link">Citation</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="https://github.com/Graph-COM/TurnGate" class="sidebar-link" target="_blank">
+                    <i class="fab fa-github"></i> Code
+                </a>
+                <a href="https://arxiv.org/abs/" class="sidebar-link" target="_blank">
+                    <i class="far fa-file-pdf"></i> Paper (arXiv)
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article class="article-container">
+                <header class="article-header">
+                    <div class="date-tag">
+                        <span>May 2026</span>
+                        <span class="tag">Preprint</span>
+                    </div>
+                    <h1 class="article-title">TurnGate: Detecting Malicious Intent in Multi-turn Dialogue</h1>
+                    <div class="authors">
+                        Xinjie Shen<sup>1*</sup>, Rongzhe Wei<sup>1*</sup>, Peizhi Niu<sup>2*</sup>, Haoyu
+                        Wang<sup>1</sup>, Ruihan Wu<sup>3</sup>, Eli Chien<sup>4</sup>, Bo Li<sup>2,6</sup>, Pin-Yu
+                        Chen<sup>5</sup>, Pan Li<sup>1</sup>
+                    </div>
+                    <div class="affiliations">
+                        <sup>1</sup>Georgia Institute of Technology, <sup>2</sup>UIUC, <sup>3</sup>OpenAI,
+                        <sup>4</sup>NTU, <sup>5</sup>IBM Research, <sup>6</sup>Virtue AI
+                    </div>
+                    <div class="project-links">
+                        <a href="https://arxiv.org/abs/" class="project-link primary" target="_blank">
+                            <i class="far fa-file-pdf"></i> Paper (arXiv)
+                        </a>
+                        <a href="https://github.com/Graph-COM/TurnGate" class="project-link" target="_blank">
+                            <i class="fab fa-github"></i> GitHub
+                        </a>
+                        <a href="comparison.html" class="project-link">
+                            <i class="fas fa-vial"></i> Interactive Examples
+                        </a>
+                    </div>
+                </header>
+
+                <div class="warning-banner">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span><strong>Warning:</strong> This page contains examples of adversarial attacks and harmful
+                        intent. All content is for research purposes to improve AI safety.</span>
+                </div>
+
+                <section id="abstract" class="content-section reveal">
+                    <h2 class="section-title">Abstract</h2>
+                    <div class="article-abstract">
+                        Hidden malicious intent in multi-turn dialogue poses a growing threat to deployed large language
+                        models (LLMs). Rather than exposing a harmful objective in a single prompt, increasingly capable
+                        attackers can distribute their intent across multiple benign-looking turns. Recent studies show
+                        that even modern commercial models with advanced guardrails remain vulnerable to such attacks
+                        despite advances in safety alignment and external guardrails. In this work, we address this
+                        challenge by detecting the earliest turn at which delivering the candidate response would make
+                        the accumulated interaction sufficient to enable harmful action. This objective requires precise
+                        turn-level intervention that identifies the harm-enabling closure point while avoiding premature
+                        refusal of benign exploratory conversations. To further support training and evaluation, we
+                        construct the <strong>Multi-Turn Intent Dataset (MTID)</strong>, which contains branching attack
+                        rollouts, matched benign hard negatives, and annotations of the earliest harm-enabling turns. We
+                        show that <strong>MTID</strong> helps enable a turn-level monitor <strong>TurnGate</strong>,
+                        which substantially outperforms existing baselines in harmful-intent detection while maintaining
+                        low over-refusal rates. <strong>TurnGate</strong> further generalizes across domains, attacker
+                        pipelines, and target models.
+                    </div>
+                </section>
+
+                <section id="introduction" class="content-section reveal">
+                    <h2 class="section-title">Sequential Intervention Logic</h2>
+                    <p>
+                        The defense challenge is no longer just to judge whether an individual turn is unsafe, but to
+                        determine when the dialogue as a whole becomes sufficient to enable harm. We formalize this as a
+                        <strong>cost-sensitive sequential stopping problem</strong>, where the goal is to identify the
+                        first turn $t^*$ at which delivering the candidate response would complete the information
+                        needed for misuse.
+                    </p>
+                    <div style="margin: 32px 0;">
+                        <iframe src="motivation-animation.html" class="motion-iframe" id="motion-iframe"
+                            title="Sequential intervention logic animation"></iframe>
+                    </div>
+                    <p>
+                        An ideal defender must identify the earliest turn $\eta_\pi$ that matches $t^*$. This
+                        interaction protocol is <strong>response-aware</strong>: the monitor inspects the model's
+                        generated response <em>before</em> delivery, as the assistant's own technical revelations
+                        contribute to whether the harm threshold is crossed.
+                    </p>
+                </section>
+
+                <section id="dataset" class="content-section reveal">
+                    <h2 class="section-title">The MTID Dataset: Construction & Annotation</h2>
+                    <p>
+                        To operationalize the defense, we construct the <strong>Multi-Turn Intent Dataset
+                            (MTID)</strong> as a collection of branching, multi-turn trajectories from adaptive
+                        attackers. Each node stores the full dialogue prefix plus the candidate response, and we
+                        annotate the earliest closure turn $t^*$ (or $\infty$ for benign trajectories).
+                    </p>
+
+                    <div class="grid-2" style="margin-top: 32px;">
+                        <div class="card" style="border-top: 4px solid var(--primary);">
+                            <h3 style="color: var(--primary);"><i class="fas fa-bullseye"></i> The Target</h3>
+                            <p>Most safety datasets use static turn labels or coarse trajectory judgments. MTID focuses
+                                on:</p>
+                            <ul style="font-size: 14px; color: var(--text-secondary); margin-top: 10px;">
+                                <li><strong>Closure Labels:</strong> Pinpoints the earliest turn $t^*$ where harm becomes
+                                    enabling.</li>
+                                <li><strong>Branching Attacks:</strong> Captures the hit-and-pivot behavior of adaptive
+                                    attackers.</li>
+                                <li><strong>Matched Benign Pairs:</strong> Includes hard negatives with overlapping
+                                    technical vocabulary to stress-test over-refusal.</li>
+                            </ul>
+                        </div>
+                        <div class="card" style="border-top: 4px solid var(--success);">
+                            <h3 style="color: var(--success);"><i class="fas fa-tools"></i> Implementation</h3>
+                            <p>We build MTID with a three-stage adaptive simulation pipeline:</p>
+                            <ol style="font-size: 14px; color: var(--text-secondary); margin-top: 10px;">
+                                <li><strong>Adaptive Tree Search:</strong> A <strong>CKA Agent</strong> explores a
+                                    branching attack tree. Nodes are dialogue states $h_{t-1}$, and edges are candidate
+                                    assistant responses.</li>
+                                <li><strong>Sufficiency Annotation:</strong> An evaluator applies
+                                    $\mathrm{Suff}(x_t, g)$ over the full prefix (including the candidate response) to
+                                    mark the minimal closure turn $t^*$.</li>
+                                <li><strong>Hard-Negative Pairing:</strong> For each harmful rollout, we add a benign
+                                    trajectory with matched topic and terminology using WildJailbreak.</li>
+                            </ol>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 10px;">
+                                Result: 16,000 trajectories across Chemistry and Cybersecurity, each with closure
+                                labels and matched benign pairs.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin: 24px 0; padding: 30px;">
+                        <h3 style="text-align: center; margin-bottom: 16px;">Example MTID Trajectories</h3>
+                        <div class="grid-2" style="gap: 24px;">
+                            <figure>
+                                <img src="figs/benign_example.png" alt="Benign MTID example" class="figure-img">
+                                <figcaption><strong>Benign example.</strong> Sociological discussion of drug
+                                    trafficking that remains non-operational.</figcaption>
+                            </figure>
+                            <figure>
+                                <img src="figs/harmful_example.png" alt="Harmful MTID example" class="figure-img">
+                                <figcaption><strong>Harmful example.</strong> The conversation shifts to phishing
+                                    intent; closure occurs at $t^*$ and triggers intervention.</figcaption>
+                            </figure>
+                        </div>
+                    </div>
+
+                    <div class="card"
+                        style="margin: 24px 0; padding: 30px; background: var(--bg-secondary); border: 1px solid var(--border-subtle);">
+                        <h3 style="text-align: center; margin-bottom: 20px;">MTID Generative Process</h3>
+                        <figure style="margin: 0;">
+                            <div style="max-width: 1100px; margin: 0 auto;">
+                                <!-- Stylized SVG Tree -->
+                                <svg viewBox="0 0 1100 460"
+                                    style="width: 100%; height: auto; font-family: Inter, sans-serif;">
+                                    <style>
+                                        .node {
+                                            fill: #fff;
+                                            stroke: #6366f1;
+                                            stroke-width: 2;
+                                        }
+
+                                        .edge {
+                                            stroke: #cbd5e1;
+                                            stroke-width: 1.5;
+                                            marker-end: url(#arrowhead);
+                                        }
+
+                                        .edge-hit {
+                                            stroke: #ef4444;
+                                            stroke-width: 2.5;
+                                        }
+
+                                        .edge-benign {
+                                            stroke: #10b981;
+                                            stroke-width: 2.5;
+                                        }
+
+                                        .ring-hit {
+                                            fill: none;
+                                            stroke: #ef4444;
+                                            stroke-width: 2;
+                                        }
+
+                                        .ring-benign {
+                                            fill: none;
+                                            stroke: #10b981;
+                                            stroke-width: 2;
+                                        }
+
+                                        .label-txt {
+                                            font-size: 13px;
+                                            fill: #64748b;
+                                            font-weight: 600;
+                                        }
+
+                                        .intent-harm {
+                                            font-size: 15px;
+                                            fill: #ef4444;
+                                            font-weight: 700;
+                                        }
+
+                                        .intent-benign {
+                                            font-size: 15px;
+                                            fill: #10b981;
+                                            font-weight: 700;
+                                        }
+
+                                        .rollout-title {
+                                            font-size: 14px;
+                                            font-weight: 700;
+                                        }
+
+                                        .rollout-tag {
+                                            font-size: 13px;
+                                            font-weight: 700;
+                                        }
+
+                                        .convo-box {
+                                            fill: #fff;
+                                            stroke-width: 1.4;
+                                        }
+
+                                        .convo-box.harm {
+                                            stroke: #ef4444;
+                                        }
+
+                                        .convo-box.benign {
+                                            stroke: #10b981;
+                                        }
+
+                                        .convo-text {
+                                            font-size: 13px;
+                                            fill: #1f2937;
+                                            font-weight: 600;
+                                        }
+
+                                        .suff-label {
+                                            font-size: 13px;
+                                            font-weight: 700;
+                                        }
+
+                                        .stage-label {
+                                            font-size: 16px;
+                                            font-weight: 800;
+                                            fill: #4f46e5;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.05em;
+                                        }
+
+                                        .transition-arrow {
+                                            stroke: #94a3b8;
+                                            stroke-width: 2;
+                                            marker-end: url(#arrowhead-large);
+                                        }
+
+                                        .stage-divider {
+                                            stroke: #e2e8f0;
+                                            stroke-width: 1.5;
+                                            stroke-dasharray: 6, 4;
+                                        }
+                                    </style>
+                                    <defs>
+                                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5"
+                                            orient="auto">
+                                            <polygon points="0 0, 10 3.5, 0 7" fill="#cbd5e1" />
+                                        </marker>
+                                        <marker id="arrowhead-large" markerWidth="8" markerHeight="8" refX="7" refY="4"
+                                            orient="auto">
+                                            <polygon points="0 0, 8 4, 0 8" fill="#94a3b8" />
+                                        </marker>
+                                    </defs>
+
+                                    <!-- Stage Dividers -->
+                                    <line x1="180" y1="10" x2="180" y2="450" class="stage-divider" />
+                                    <line x1="650" y1="10" x2="650" y2="450" class="stage-divider" />
+
+                                    <!-- Stage Labels -->
+                                    <text x="20" y="25" class="stage-label">Stage 1: Intent</text>
+                                    <text x="250" y="25" class="stage-label">Stage 2: Adaptive Tree Search</text>
+                                    <text x="730" y="25" class="stage-label">Stage 3: Rollout & Annotation</text>
+
+                                    <!-- HARMFUL PIPELINE -->
+                                    <text x="20" y="60" class="intent-harm">Harmful intent g</text>
+
+                                    <!-- Transition Arrow 1: Intent -> Tree -->
+                                    <line x1="130" y1="75" x2="280" y2="75" class="transition-arrow" />
+
+                                    <!-- Tree Nodes & Edges (Harmful) -->
+                                    <line x1="400" y1="85" x2="340" y2="145" class="edge" />
+                                    <line x1="400" y1="85" x2="460" y2="145" class="edge" />
+                                    <line x1="340" y1="145" x2="310" y2="205" class="edge" />
+                                    <line x1="340" y1="145" x2="370" y2="205" class="edge" />
+                                    <line x1="460" y1="145" x2="430" y2="205" class="edge" />
+                                    <line x1="460" y1="145" x2="490" y2="205" class="edge" />
+
+                                    <line x1="400" y1="85" x2="340" y2="145" class="edge-hit" />
+                                    <line x1="340" y1="145" x2="310" y2="205" class="edge-hit" />
+                                    <line x1="400" y1="85" x2="460" y2="145" class="edge-hit" />
+                                    <line x1="460" y1="145" x2="490" y2="205" class="edge-hit" />
+
+                                    <circle cx="400" cy="85" r="9" class="node" />
+                                    <text x="412" y="89" class="label-txt">h₀</text>
+
+                                    <circle cx="340" cy="145" r="9" class="node" />
+                                    <text x="352" y="149" class="label-txt">h₁</text>
+                                    <circle cx="460" cy="145" r="9" class="node" />
+                                    <text x="472" y="149" class="label-txt">h₁</text>
+
+                                    <circle cx="310" cy="205" r="9" class="node" />
+                                    <circle cx="370" cy="205" r="9" class="node" />
+                                    <circle cx="430" cy="205" r="9" class="node" />
+                                    <circle cx="490" cy="205" r="9" class="node" />
+
+                                    <circle cx="310" cy="205" r="12" class="ring-hit" />
+                                    <circle cx="490" cy="205" r="12" class="ring-hit" />
+
+                                    <text x="280" y="235" class="suff-label" style="fill: #ef4444;">Suff(x_t, g) = 1</text>
+
+                                    <!-- Transition Arrow 2: Tree -> Rollout -->
+                                    <line x1="510" y1="135" x2="680" y2="105" class="transition-arrow" />
+
+                                    <!-- Rollout Connections (Dashed) -->
+                                    <line x1="322" y1="205" x2="700" y2="120" stroke="#ef4444" stroke-width="1.4"
+                                        stroke-dasharray="4" />
+                                    <line x1="502" y1="205" x2="900" y2="120" stroke="#ef4444" stroke-width="1.4"
+                                        stroke-dasharray="4" />
+
+                                    <!-- Rollout A (Harmful) -->
+                                    <text x="700" y="80" class="rollout-title" style="fill: #ef4444;">Harmful rollout A</text>
+                                    <rect x="700" y="92" width="180" height="22" rx="6" class="convo-box harm" />
+                                    <rect x="700" y="118" width="180" height="22" rx="6" class="convo-box harm" />
+                                    <rect x="700" y="144" width="180" height="22" rx="6" class="convo-box harm" />
+                                    <text x="710" y="107" class="convo-text">(q₁, r₁)</text>
+                                    <text x="710" y="133" class="convo-text">(q₂, r₂)</text>
+                                    <text x="710" y="159" class="convo-text">(q₃, r₃)</text>
+                                    <text x="848" y="159" class="rollout-tag" style="fill: #ef4444;">t*</text>
+
+                                    <!-- Rollout B (Harmful) -->
+                                    <text x="900" y="80" class="rollout-title" style="fill: #ef4444;">Harmful rollout B</text>
+                                    <rect x="900" y="92" width="180" height="22" rx="6" class="convo-box harm" />
+                                    <rect x="900" y="118" width="180" height="22" rx="6" class="convo-box harm" />
+                                    <rect x="900" y="144" width="180" height="22" rx="6" class="convo-box harm" />
+                                    <text x="910" y="107" class="convo-text">(q₁, r₁)</text>
+                                    <text x="910" y="133" class="convo-text">(q₂, r₂)</text>
+                                    <text x="910" y="159" class="convo-text">(q₃, r₃)</text>
+                                    <text x="1048" y="159" class="rollout-tag" style="fill: #ef4444;">t*</text>
+
+
+                                    <!-- BENIGN PIPELINE -->
+                                    <text x="20" y="280" class="intent-benign">Benign intent b</text>
+
+                                    <!-- Transition Arrow 1: Intent -> Tree -->
+                                    <line x1="130" y1="305" x2="280" y2="305" class="transition-arrow" />
+
+                                    <!-- Tree Nodes & Edges (Benign) -->
+                                    <line x1="400" y1="305" x2="340" y2="365" class="edge" />
+                                    <line x1="400" y1="305" x2="460" y2="365" class="edge" />
+                                    <line x1="340" y1="365" x2="310" y2="425" class="edge" />
+                                    <line x1="340" y1="365" x2="370" y2="425" class="edge" />
+                                    <line x1="460" y1="365" x2="430" y2="425" class="edge" />
+                                    <line x1="460" y1="365" x2="490" y2="425" class="edge" />
+
+                                    <line x1="400" y1="305" x2="340" y2="365" class="edge-benign" />
+                                    <line x1="340" y1="365" x2="370" y2="425" class="edge-benign" />
+                                    <line x1="400" y1="305" x2="460" y2="365" class="edge-benign" />
+                                    <line x1="460" y1="365" x2="430" y2="425" class="edge-benign" />
+
+                                    <circle cx="400" cy="305" r="9" class="node" />
+                                    <text x="412" y="309" class="label-txt">h₀</text>
+
+                                    <circle cx="340" cy="365" r="9" class="node" />
+                                    <text x="352" y="369" class="label-txt">h₁</text>
+                                    <circle cx="460" cy="365" r="9" class="node" />
+                                    <text x="472" y="369" class="label-txt">h₁</text>
+
+                                    <circle cx="310" cy="425" r="9" class="node" />
+                                    <circle cx="370" cy="425" r="9" class="node" />
+                                    <circle cx="430" cy="425" r="9" class="node" />
+                                    <circle cx="490" cy="425" r="9" class="node" />
+
+                                    <circle cx="370" cy="425" r="12" class="ring-benign" />
+                                    <circle cx="430" cy="425" r="12" class="ring-benign" />
+
+                                    <text x="340" y="455" class="suff-label" style="fill: #10b981;">Suff(x_t, b) = 1</text>
+
+                                    <!-- Transition Arrow 2: Tree -> Rollout -->
+                                    <line x1="510" y1="355" x2="680" y2="335" class="transition-arrow" />
+
+                                    <!-- Rollout Connections (Dashed) -->
+                                    <line x1="382" y1="425" x2="700" y2="350" stroke="#10b981" stroke-width="1.4"
+                                        stroke-dasharray="4" />
+                                    <line x1="442" y1="425" x2="900" y2="350" stroke="#10b981" stroke-width="1.4"
+                                        stroke-dasharray="4" />
+
+                                    <!-- Rollout A (Benign) -->
+                                    <text x="700" y="310" class="rollout-title" style="fill: #10b981;">Benign rollout A</text>
+                                    <text x="820" y="310" class="rollout-tag" style="fill: #10b981;">pass all (t* = ∞)</text>
+                                    <rect x="700" y="322" width="180" height="22" rx="6" class="convo-box benign" />
+                                    <rect x="700" y="348" width="180" height="22" rx="6" class="convo-box benign" />
+                                    <rect x="700" y="374" width="180" height="22" rx="6" class="convo-box benign" />
+                                    <text x="710" y="337" class="convo-text">(q₁, r₁)</text>
+                                    <text x="710" y="363" class="convo-text">(q₂, r₂)</text>
+                                    <text x="710" y="389" class="convo-text">(q₃, r₃)</text>
+
+                                    <!-- Rollout B (Benign) -->
+                                    <text x="900" y="310" class="rollout-title" style="fill: #10b981;">Benign rollout B</text>
+                                    <text x="1020" y="310" class="rollout-tag" style="fill: #10b981;">pass all (t* = ∞)</text>
+                                    <rect x="900" y="322" width="180" height="22" rx="6" class="convo-box benign" />
+                                    <rect x="900" y="348" width="180" height="22" rx="6" class="convo-box benign" />
+                                    <rect x="900" y="374" width="180" height="22" rx="6" class="convo-box benign" />
+                                    <text x="910" y="337" class="convo-text">(q₁, r₁)</text>
+                                    <text x="910" y="363" class="convo-text">(q₂, r₂)</text>
+                                    <text x="910" y="389" class="convo-text">(q₃, r₃)</text>
+                                </svg>
+                            </div>
+                            <figcaption style="margin-top: 20px; font-size: 16px; line-height: 1.6; color: var(--text-secondary);">
+                                <strong>MTID Generative Process.</strong> We simulate multi-turn interactions using a three-stage adaptive pipeline. Stage 1 selects a harmful/benign intent. Stage 2 explores a branching dialogue tree using adaptive search. Stage 3 rolls out complete trajectories and annotates the earliest closure turn $t^*$. Here, <strong>$q_t$</strong> and <strong>$r_t$</strong> denote the user query and assistant response at turn $t$, respectively.
+                            </figcaption>
+                        </figure>
+                    </div>
+                </section>
+
+                <section id="results" class="content-section reveal">
+                    <h2 class="section-title">Experimental Results</h2>
+                    <p class="section-subtitle">
+                        TurnGate achieves the state-of-the-art trade-off between timely intervention and utility
+                        preservation.
+                    </p>
+
+                    <h3>Main Offline Results (MTID Test Split)</h3>
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2">Method</th>
+                                    <th rowspan="2">Backbone</th>
+                                    <th class="num">Utility</th>
+                                    <th colspan="4" class="num bg-harmful">Harmful (Detection Timing)</th>
+                                    <th colspan="3" class="num bg-overall">F1 Score (Summary)</th>
+                                </tr>
+                                <tr>
+                                    <th class="num">Benign $\uparrow$</th>
+                                    <th class="num bg-harmful">Miss $\downarrow$</th>
+                                    <th class="num bg-harmful">Early $\downarrow$</th>
+                                    <th class="num bg-harmful">Acc ($\phi_1$) $\uparrow$</th>
+                                    <th class="num bg-harmful">Harm ($\phi_2$) $\uparrow$</th>
+                                    <th class="num bg-overall">F1 ($\phi_1$) $\uparrow$</th>
+                                    <th class="num bg-overall">F1 ($\phi_2$) $\uparrow$</th>
+                                    <th class="num bg-overall">F1 ($\phi_3$) $\uparrow$</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="group-row">
+                                    <td colspan="10">Prompt-based Monitors</td>
+                                </tr>
+                                <tr>
+                                    <td>Vanilla LLM</td>
+                                    <td>Qwen3-4B</td>
+                                    <td class="num">0.753</td>
+                                    <td class="num bg-harmful">0.708</td>
+                                    <td class="num bg-harmful">0.168</td>
+                                    <td class="num bg-harmful">0.124</td>
+                                    <td class="num bg-harmful">0.211</td>
+                                    <td class="num bg-overall">0.211</td>
+                                    <td class="num bg-overall">0.330</td>
+                                    <td class="num bg-overall">0.284</td>
+                                </tr>
+                                <tr>
+                                    <td>Vanilla LLM</td>
+                                    <td>GPT-5.2</td>
+                                    <td class="num">0.826</td>
+                                    <td class="num bg-harmful">0.787</td>
+                                    <td class="num bg-harmful">0.073</td>
+                                    <td class="num bg-harmful">0.139</td>
+                                    <td class="num bg-harmful">0.175</td>
+                                    <td class="num bg-overall">0.238</td>
+                                    <td class="num bg-overall">0.288</td>
+                                    <td class="num bg-overall">0.266</td>
+                                </tr>
+                                <tr>
+                                    <td>Vanilla LLM</td>
+                                    <td>GPT-OSS-120B</td>
+                                    <td class="num">0.809</td>
+                                    <td class="num bg-harmful">0.719</td>
+                                    <td class="num bg-harmful">0.114</td>
+                                    <td class="num bg-harmful">0.167</td>
+                                    <td class="num bg-harmful">0.220</td>
+                                    <td class="num bg-overall">0.277</td>
+                                    <td class="num bg-overall">0.345</td>
+                                    <td class="num bg-overall">0.313</td>
+                                </tr>
+                                <tr>
+                                    <td>Sequential Mon.</td>
+                                    <td>Qwen3-4B</td>
+                                    <td class="num">0.898</td>
+                                    <td class="num bg-harmful">0.831</td>
+                                    <td class="num bg-harmful">0.086</td>
+                                    <td class="num bg-harmful">0.083</td>
+                                    <td class="num bg-harmful">0.123</td>
+                                    <td class="num bg-overall">0.153</td>
+                                    <td class="num bg-overall">0.216</td>
+                                    <td class="num bg-overall">0.187</td>
+                                </tr>
+                                <tr>
+                                    <td>Sequential Mon.</td>
+                                    <td>GPT-5.2</td>
+                                    <td class="num">0.648</td>
+                                    <td class="num bg-harmful">0.412</td>
+                                    <td class="num bg-harmful">0.296</td>
+                                    <td class="num bg-harmful">0.292</td>
+                                    <td class="num bg-harmful">0.428</td>
+                                    <td class="num bg-overall">0.402</td>
+                                    <td class="num bg-overall">0.516</td>
+                                    <td class="num bg-overall">0.465</td>
+                                </tr>
+                                <tr>
+                                    <td>Intention Analysis</td>
+                                    <td>Qwen3-4B</td>
+                                    <td class="num">0.854</td>
+                                    <td class="num bg-harmful">0.823</td>
+                                    <td class="num bg-harmful">0.087</td>
+                                    <td class="num bg-harmful">0.091</td>
+                                    <td class="num bg-harmful">0.133</td>
+                                    <td class="num bg-overall">0.164</td>
+                                    <td class="num bg-overall">0.230</td>
+                                    <td class="num bg-overall">0.202</td>
+                                </tr>
+                                <tr>
+                                    <td>Intention Analysis</td>
+                                    <td>GPT-OSS-120B</td>
+                                    <td class="num">0.023</td>
+                                    <td class="num bg-harmful">0.045</td>
+                                    <td class="num bg-harmful">0.638</td>
+                                    <td class="num bg-harmful">0.317</td>
+                                    <td class="num bg-harmful">0.574</td>
+                                    <td class="num bg-overall">0.043</td>
+                                    <td class="num bg-overall">0.045</td>
+                                    <td class="num bg-overall">0.044</td>
+                                </tr>
+
+                                <tr class="group-row">
+                                    <td colspan="10">Guardrail-based Baselines</td>
+                                </tr>
+                                <tr>
+                                    <td>Llama Guard</td>
+                                    <td>Llama-3-8B</td>
+                                    <td class="num">0.998</td>
+                                    <td class="num bg-harmful">0.998</td>
+                                    <td class="num bg-harmful">0.001</td>
+                                    <td class="num bg-harmful">0.002</td>
+                                    <td class="num bg-harmful">0.002</td>
+                                    <td class="num bg-overall">0.003</td>
+                                    <td class="num bg-overall">0.005</td>
+                                    <td class="num bg-overall">0.005</td>
+                                </tr>
+                                <tr>
+                                    <td>Qwen Guard</td>
+                                    <td>Qwen3-8B</td>
+                                    <td class="num">0.863</td>
+                                    <td class="num bg-harmful">0.788</td>
+                                    <td class="num bg-harmful">0.092</td>
+                                    <td class="num bg-harmful">0.120</td>
+                                    <td class="num bg-harmful">0.159</td>
+                                    <td class="num bg-overall">0.211</td>
+                                    <td class="num bg-overall">0.269</td>
+                                    <td class="num bg-overall">0.239</td>
+                                </tr>
+                                <tr>
+                                    <td>Synthesis-Llama</td>
+                                    <td>Llama-3-8B</td>
+                                    <td class="num">0.983</td>
+                                    <td class="num bg-harmful">0.990</td>
+                                    <td class="num bg-harmful">0.003</td>
+                                    <td class="num bg-harmful">0.007</td>
+                                    <td class="num bg-harmful">0.008</td>
+                                    <td class="num bg-overall">0.013</td>
+                                    <td class="num bg-overall">0.017</td>
+                                    <td class="num bg-overall">0.015</td>
+                                </tr>
+
+                                <tr class="group-row">
+                                    <td colspan="10">Trainable Methods (Qwen3-4B)</td>
+                                </tr>
+                                <tr>
+                                    <td>Naive-SFT (Traj)</td>
+                                    <td>Qwen3-4B</td>
+                                    <td class="num">0.609</td>
+                                    <td class="num bg-harmful">0.089</td>
+                                    <td class="num bg-harmful">0.629</td>
+                                    <td class="num bg-harmful">0.282</td>
+                                    <td class="num bg-harmful">0.532</td>
+                                    <td class="num bg-overall">0.386</td>
+                                    <td class="num bg-overall">0.568</td>
+                                    <td class="num bg-overall">0.477</td>
+                                </tr>
+                                <tr>
+                                    <td>Naive-SFT (Turn)</td>
+                                    <td>Qwen3-4B</td>
+                                    <td class="num">0.930</td>
+                                    <td class="num bg-harmful">0.738</td>
+                                    <td class="num bg-harmful">0.098</td>
+                                    <td class="num bg-harmful">0.163</td>
+                                    <td class="num bg-harmful">0.224</td>
+                                    <td class="num bg-overall">0.278</td>
+                                    <td class="num bg-overall">0.361</td>
+                                    <td class="num bg-overall">0.334</td>
+                                </tr>
+                                <tr>
+                                    <td>Reweighted-SFT</td>
+                                    <td>Qwen3-4B</td>
+                                    <td class="num">0.840</td>
+                                    <td class="num bg-harmful">0.379</td>
+                                    <td class="num bg-harmful">0.278</td>
+                                    <td class="num bg-harmful">0.343</td>
+                                    <td class="num bg-harmful">0.479</td>
+                                    <td class="num bg-overall">0.487</td>
+                                    <td class="num bg-overall">0.610</td>
+                                    <td class="num bg-overall">0.557</td>
+                                </tr>
+                                <tr class="best-row">
+                                    <td><strong>TurnGate (Ours)</strong></td>
+                                    <td>Qwen3-4B</td>
+                                    <td class="num">0.834</td>
+                                    <td class="num bg-harmful">0.177</td>
+                                    <td class="num bg-harmful">0.409</td>
+                                    <td class="num bg-harmful">0.414</td>
+                                    <td class="num bg-harmful">0.602</td>
+                                    <td class="num bg-overall best-val">0.553</td>
+                                    <td class="num bg-overall best-val">0.699</td>
+                                    <td class="num bg-overall best-val">0.633</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card" style="margin: 32px 0; padding: 30px;">
+                        <h3 style="margin-top: 0; color: var(--cka-primary);"><i class="fas fa-microscope"></i> Metric
+                            Intuition: Proximity Score $\phi$</h3>
+                        <p>How do we measure "closeness" to the closure turn $t^*$? We define $\phi(\eta_\pi; t^*)$ as
+                            the credit assigned based on the turn $\eta_\pi$ at which the defender intervenes.</p>
+
+                        <div class="phi-example-container">
+                            <div class="phi-grid">
+                                <div class="phi-grid-title">Dialogue Timeline (Closure Turn $t^*=4$)</div>
+
+                                <div class="phi-marker phi-marker-top phi-col-4">
+                                    <div class="label">Case A: Exact ($\eta_\pi = t^*$)</div>
+                                    <div class="val">Score: 1.0</div>
+                                    <div class="phi-arrow"></div>
+                                </div>
+
+                                <div class="phi-track">
+                                    <div class="phi-turn">1</div>
+                                    <div class="phi-turn">2</div>
+                                    <div class="phi-turn">3</div>
+                                    <div class="phi-turn is-t-star">4</div>
+                                    <div class="phi-turn">5</div>
+                                </div>
+
+                                <div class="phi-marker phi-marker-bottom phi-col-2">
+                                    <div class="phi-arrow"></div>
+                                    <div class="val">Score: 0.5</div>
+                                    <div class="label">Case B: Early ($\eta_\pi = 2$)</div>
+                                </div>
+
+                                <div class="phi-marker phi-marker-bottom phi-col-5">
+                                    <div class="phi-arrow"></div>
+                                    <div class="val">Score: 0.0</div>
+                                    <div class="label">Case C: Miss ($\eta_\pi > t^*$)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid-3" style="gap: 20px; margin-top: 40px;">
+                            <div class="card" style="padding: 15px; border-top: 3px solid var(--text-muted);">
+                                <h4 style="font-size: 13px; color: var(--cka-primary);">$\phi_1$ (Strict)</h4>
+                                <p style="font-size: 12px;">Only exact closure at $t^*$ is rewarded ($1.0$). Any early
+                                    block or miss receives $0.0$. Most stringent safety metric.</p>
+                                <p class="phi-case-scores">Case A: 1.0; Case B: 0.0; Case C: 0.0.</p>
+                            </div>
+                            <div class="card" style="padding: 15px; border-top: 3px solid var(--cka-primary);">
+                                <h4 style="font-size: 13px; color: var(--cka-primary);">$\phi_2$ (Linear Proximity)</h4>
+                                <p style="font-size: 12px;">Rewards "closeness" to $t^*$. Assigns partial credit
+                                    $\eta_\pi/t^*$ for early blocks. Misses receive $0.0$. Used for main F1 results.</p>
+                                <p class="phi-case-scores">Case A: 1.0; Case B: $\eta_\pi/t^*$ (here 0.5); Case C: 0.0.</p>
+                            </div>
+                            <div class="card" style="padding: 15px; border-top: 3px solid var(--cka-secondary);">
+                                <h4 style="font-size: 13px; color: var(--cka-primary);">$\phi_3$ (Conservative)</h4>
+                                <p style="font-size: 12px;">Sharp penalty for premature blocks. Assigns
+                                    $(\eta_\pi/t^*)^2$ for early intervention. Higher penalty for blocking near turn 1.
+                                </p>
+                                <p class="phi-case-scores">Case A: 1.0; Case B: $(\eta_\pi/t^*)^2$ (here 0.25); Case C: 0.0.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin: 40px 0; padding: 25px; border-left: 5px solid var(--primary);">
+                        <h3 style="color: var(--primary);"><i class="fas fa-globe"></i> Online OOD Generalization</h3>
+                        <p style="margin-bottom: 20px;"><strong>Setting:</strong> We stress-test TurnGate in a strict
+                            zero-shot setting against an adaptive tree-search attacker ($i=5$) across distribution
+                            shifts in benchmarks, target models, and attacker pipelines.</p>
+                        <p style="margin-bottom: 20px; font-size: 14px; color: var(--text-secondary);">
+                            <strong>Why online is harder:</strong> The attacker interacts with the live
+                            target--defender loop, conditions each next query on delivered responses, and can
+                            backtrack or reroute after blocked or uninformative turns. This closed-loop adaptation
+                            (with iteration budget $i \in \{1, 3, 5\}$) is more realistic than offline fixed
+                            trajectories and makes defense substantially harder.
+                        </p>
+
+
+                        <div
+                            style="display: flex; flex-direction: column; gap: 40px; background: #fff; padding: 20px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                            <div style="text-align: center; margin-bottom: -20px;">
+                                <img src="figs/ood_legend.png" alt="Legend" style="max-width: 80%; height: auto;">
+                            </div>
+                            <div class="figure-stack">
+                                <div
+                                    style="margin-bottom: 40px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 20px;">
+                                    <img src="figs/ood_benchmark.png" alt="Benchmark Distribution Shift"
+                                        style="width: 100%; height: auto; margin-bottom: 10px;">
+                                    <p
+                                        style="font-size: 14px; color: var(--text-secondary); font-style: italic; text-align: center;">
+                                        <strong>(a) Benchmark Shift:</strong> Zero-shot transfer to StrongReject,
+                                        HarmBench, and JBB-Behaviors across 12+ unseen risk categories.</p>
+                                </div>
+                                <div
+                                    style="margin-bottom: 40px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 20px;">
+                                    <img src="figs/ood_model.png" alt="Target-Model Distribution Shift"
+                                        style="width: 100%; height: auto; margin-bottom: 10px;">
+                                    <p
+                                        style="font-size: 14px; color: var(--text-secondary); font-style: italic; text-align: center;">
+                                        <strong>(b) Model Shift:</strong> Defending a <strong>Gemini-3.1-Pro</strong>
+                                        model zero-shot using a monitor trained exclusively on GPT-5.2 interactions.</p>
+                                </div>
+                                <div
+                                    style="margin-bottom: 40px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 20px;">
+                                    <img src="figs/ood_joint.png" alt="Joint Target + Benchmark Shift"
+                                        style="width: 100%; height: auto; margin-bottom: 10px;">
+                                    <p
+                                        style="font-size: 14px; color: var(--text-secondary); font-style: italic; text-align: center;">
+                                        <strong>(c) Joint Shift:</strong> Simultaneous zero-shot transfer across both
+                                        target model architecture and high-risk benchmarks.</p>
+                                </div>
+                                <div>
+                                    <img src="figs/ood_pipeline.png" alt="Attacker-Pipeline Distribution Shift"
+                                        style="width: 100%; height: auto; margin-bottom: 10px;">
+                                    <p
+                                        style="font-size: 14px; color: var(--text-secondary); font-style: italic; text-align: center;">
+                                        <strong>(d) Pipeline Shift:</strong> Generalization to defend against
+                                        multi-agent jailbreak (MAJ) attack pipelines.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid-3" style="margin-top: 25px; gap: 20px;">
+                            <div
+                                style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                                <h4
+                                    style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">
+                                    Setting</h4>
+                                <p style="font-size: 13px;">Online battle against an adaptive tree-search attacker with
+                                    iteration budget $i=5$.</p>
+                            </div>
+                            <div
+                                style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                                <h4
+                                    style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">
+                                    Key Insight</h4>
+                                <p style="font-size: 13px;">Reduces ASR by up to <strong>45%</strong> on Illegal Goods
+                                    and <strong>40%</strong> on Physical Harm categories zero-shot.</p>
+                            </div>
+                            <div
+                                style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                                <h4
+                                    style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">
+                                    Takeaway</h4>
+                                <p style="font-size: 13px;">TurnGate learns <strong>transferable turn-level
+                                        behavior</strong> rather than relying on domain-specific surface cues.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="methodology" class="content-section reveal">
+                    <h2 class="section-title">Methodology: From Sequential Logic to RL Optimization</h2>
+                    <p>
+                        TurnGate is designed to solve the challenge of <strong>distributed malicious intent</strong>,
+                        where an attacker spreads a harmful objective across multiple benign-looking turns.
+                    </p>
+
+                    <h3>1. Interaction Protocol and Response-Awareness</h3>
+                    <p>
+                        We model the interaction as a three-party dialogue among a user, a base assistant, and a
+                        defender. At each turn $t$, the defender observes the full context:
+                        $$x_t = ((q_1, r_1), \ldots, (q_{t-1}, r_{t-1}), q_t, \tilde{r}_t)$$
+                        Crucially, the defender is <strong>response-aware</strong>: it inspects the assistant's
+                        candidate response $\tilde{r}_t$ <em>before</em> delivery. This is essential because the model's
+                        own technical revelations often determine whether the harm threshold is crossed.
+                    </p>
+
+                    <h3>2. The Harmful Closure Turn ($t^*$)</h3>
+                    <p>
+                        We define the <strong>closure turn</strong> $t^*$ as the first turn where the interaction
+                        becomes sufficient to realize a harmful objective $g$:
+                        $$t^*(\tau, g) = \min(\{t \in \{1, \ldots, T\} : \mathrm{Suff}(x_t, g) = 1\} \cup \{\infty\})$$
+                        where $\mathrm{Suff}(x_t, g)$ is a binary sufficiency operator. The defender's goal is to match
+                        this stopping time: $\eta_\pi = t^*$.
+                    </p>
+
+                    <h3>3. Cost-Sensitive Stopping Objective</h3>
+                    <p>
+                        The quality of a defender is determined by the trajectory-level utility $J(\pi)$, which
+                        explicitly balances safety and utility:
+                    </p>
+                    <div class="article-abstract"
+                        style="margin-top: 16px; font-family: monospace; font-size: 16px; overflow-x: auto;">
+                        $$J(\pi) = \mathbb{E}\Big[ u_{\mathrm{ben}}\mathbf{1}[\text{benign}] +
+                        u_{\mathrm{hit}}\mathbf{1}[\text{timely}] - c_{\mathrm{fp}}\mathbf{1}[\text{FP}] -
+                        c_{\mathrm{miss}}\mathbf{1}[\text{miss}] - c_{\mathrm{early}}(1-\phi)\mathbf{1}[\text{early}]
+                        \Big]$$
+                    </div>
+
+                    <h3>4. Turn-Level Process Rewards</h3>
+                    <p>
+                        To optimize $J(\pi)$, we decompose the trajectory-level utility into <strong>turn-level process
+                            rewards</strong> $R_t$:
+                    </p>
+                    <div class="article-abstract"
+                        style="margin-top: 16px; font-family: monospace; font-size: 16px; overflow-x: auto;">
+                        $$R_t = \begin{cases} u_{\mathrm{ben}}\mathbf{1}[t < t^\ast] -
+                            c_{\mathrm{miss}}\mathbf{1}[t=t^\ast], & \text{if } a_t=\text{PASS} \\
+                            u_{\mathrm{hit}}\mathbf{1}[t=t^\ast] - c_{\mathrm{early}}(1-\phi(t; t^\ast))\mathbf{1}[t <
+                            t^\ast] - c_{\mathrm{fp}}\mathbf{1}[t^\ast=\infty], & \text{if } a_t=\text{BLOCK}
+                            \end{cases}$$ </div>
+                            <p>
+                                We optimize TurnGate using Reinforcement Learning with Generalized Advantage Estimate
+                                (GAE) to propagate these rewards across turns, training the monitor to recognize the
+                                latent synthesis of restricted capability.
+                            </p>
+                </section>
+
+                <section id="citation" class="content-section reveal">
+                    <h2 class="section-title">Citation</h2>
+                    <div class="citation-box">
+                        <pre><code>@article{shen2026turngate,
+  title={TurnGate: Detecting Malicious Intent in Multi-turn Dialogue},
+  author={Shen, Xinjie and Wei, Rongzhe and Niu, Peizhi and Wang, Haoyu and Wu, Ruihan and Chien, Eli and Li, Bo and Chen, Pin-Yu and Li, Pan},
+  journal={arXiv preprint arXiv:26xx.xxxxx},
+  year={2026}
+}</code></pre>
+                    </div>
+                </section>
+            </article>
+
+            <footer class="footer">
+                <p>&copy; 2026 TurnGate Research Team. All Rights Reserved.</p>
+            </footer>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
