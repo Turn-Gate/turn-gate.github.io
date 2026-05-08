@@ -1,6 +1,6 @@
 # TurnGate Research Website
 
-<a href="https://arxiv.org/abs/" target="_blank">
+<a href="https://arxiv.org/abs/2605.05630" target="_blank">
     <img alt="arXiv" src="https://img.shields.io/badge/arXiv-TurnGate-red?logo=arxiv&style=for-the-badge" />
 </a>
 <a href="https://turn-gate.github.io/" target="_blank">
@@ -31,10 +31,13 @@ python -m http.server 8080
 If you find TurnGate useful in your research, please consider citing:
 
 ```bibtex
-@article{shen2026turngate,
-  title={TurnGate: Detecting Malicious Intent in Multi-turn Dialogue},
-  author={Shen, Xinjie and Wei, Rongzhe and Niu, Peizhi and Wang, Haoyu and Wu, Ruihan and Chien, Eli and Li, Bo and Chen, Pin-Yu and Li, Pan},
-  journal={arXiv preprint arXiv:26xx.xxxxx},
-  year={2026}
+@misc{shen2026turnlateresponseawaredefense,
+      title={One Turn Too Late: Response-Aware Defense Against Hidden Malicious Intent in Multi-Turn Dialogue}, 
+      author={Xinjie Shen and Rongzhe Wei and Peizhi Niu and Haoyu Wang and Ruihan Wu and Eli Chien and Bo Li and Pin-Yu Chen and Pan Li},
+      year={2026},
+      eprint={2605.05630},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2605.05630}, 
 }
 ```
