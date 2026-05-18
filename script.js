@@ -4,23 +4,48 @@ document.addEventListener("DOMContentLoaded", function () {
     const sideNav = document.querySelector(".sidebar-nav");
     const mobileHeader = document.querySelector(".mobile-header");
 
-    if (navToggle) {
+    const closeMobileNav = () => {
+        if (!sideNav) return;
+        sideNav.style.display = 'none';
+        document.body.style.overflow = '';
+        navToggle?.setAttribute('aria-expanded', 'false');
+    };
+
+    const openMobileNav = () => {
+        if (!sideNav || !mobileHeader) return;
+        sideNav.style.display = 'block';
+        sideNav.style.position = 'fixed';
+        sideNav.style.top = mobileHeader.offsetHeight + 'px';
+        sideNav.style.left = '0';
+        sideNav.style.width = '100%';
+        sideNav.style.height = `calc(100vh - ${mobileHeader.offsetHeight}px)`;
+        document.body.style.overflow = 'hidden';
+        navToggle?.setAttribute('aria-expanded', 'true');
+    };
+
+    if (navToggle && sideNav) {
         navToggle.addEventListener("click", function () {
-            // In mobile view, we might want to show the sidebar as an overlay
             if (window.innerWidth <= 900) {
                 const isVisible = getComputedStyle(sideNav).display !== 'none';
                 if (isVisible) {
-                    sideNav.style.display = 'none';
+                    closeMobileNav();
                 } else {
-                    sideNav.style.display = 'block';
-                    sideNav.style.position = 'fixed';
-                    sideNav.style.top = mobileHeader.offsetHeight + 'px';
-                    sideNav.style.width = '100%';
-                    sideNav.style.height = `calc(100vh - ${mobileHeader.offsetHeight}px)`;
+                    openMobileNav();
                 }
             }
         });
     }
+
+    window.addEventListener('resize', () => {
+        if (!sideNav) return;
+        if (window.innerWidth > 900) {
+            sideNav.removeAttribute('style');
+            document.body.style.overflow = '';
+            navToggle?.setAttribute('aria-expanded', 'false');
+        } else if (navToggle?.getAttribute('aria-expanded') === 'true') {
+            openMobileNav();
+        }
+    });
 
     // Active Link Highlighting
     const currentPath = window.location.pathname.split("/").pop() || "index.html";
@@ -67,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 // Close mobile menu if open
                 if (window.innerWidth <= 900) {
-                    sideNav.style.display = 'none';
+                    closeMobileNav();
                 }
             }
         });

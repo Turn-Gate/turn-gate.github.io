@@ -247,6 +247,40 @@
         @media (max-width: 900px) {
             .container { grid-template-columns: 1fr; }
             .column { min-height: auto; }
+            .legend {
+                grid-column: 1;
+                flex-wrap: wrap;
+                gap: 10px 18px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 8px;
+            }
+
+            .container {
+                gap: 16px;
+            }
+
+            .column-header {
+                font-size: 12px;
+            }
+
+            .bubble {
+                width: 100%;
+                padding: 8px 10px;
+                font-size: 12.5px;
+            }
+
+            .turn-container {
+                padding: 8px;
+            }
+
+            .legend {
+                justify-content: flex-start;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -274,7 +308,7 @@
         <div class="column" id="col-harmful">
             <div class="column-header">
                 <span><span style="color: var(--danger)">●</span> Attacker</span>
-                <span class="column-subtitle">TurnGate: Timely intervention at $t^*$</span>
+                <span class="column-subtitle">TurnGate: Timely intervention at t*</span>
             </div>
             <!-- Turns will be injected -->
         </div>
@@ -335,7 +369,7 @@
             });
             // Harmful
             dialogues.harmful.forEach((d, i) => {
-                const dec = i === 2 ? 'BLOCK ($t^*$)' : 'PASS';
+                const dec = i === 2 ? 'BLOCK (t*)' : 'PASS';
                 const res = i === 2 ? "[RESPONSE WITHHELD] Policy violation detected." : d.r;
                 createTurn('col-harmful', i, d.q, res, dec);
             });

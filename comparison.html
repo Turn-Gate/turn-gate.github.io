@@ -13,7 +13,25 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TurnGate: Interactive Trajectory Analysis</title>
+    <meta name="description"
+        content="Interactive TurnGate examples comparing benign technical exploration with distributed malicious intent in multi-turn conversations.">
+    <meta name="keywords" content="TurnGate examples, multi-turn dialogue safety, malicious intent detection, MTID dataset">
+    <meta name="author" content="TurnGate Research Team">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://turn-gate.github.io/comparison.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="TurnGate">
+    <meta property="og:title" content="TurnGate Examples: Benign vs. Harmful Interactions">
+    <meta property="og:description"
+        content="Compare safe technical exploration with distributed malicious intent using TurnGate's sequential intervention logic.">
+    <meta property="og:url" content="https://turn-gate.github.io/comparison.html">
+    <meta property="og:image" content="https://turn-gate.github.io/figs/benign_example.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TurnGate Examples: Benign vs. Harmful Interactions">
+    <meta name="twitter:description"
+        content="Compare safe technical exploration with distributed malicious intent using TurnGate's sequential intervention logic.">
+    <meta name="twitter:image" content="https://turn-gate.github.io/figs/benign_example.png">
+    <title>TurnGate Examples: Benign vs. Harmful Interactions</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,7 +47,7 @@
                 <div class="logo-mark">TG</div>
                 <span>TurnGate</span>
             </a>
-            <button class="nav-toggle" aria-label="Toggle navigation">
+            <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="site-navigation">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
@@ -37,7 +55,7 @@
 
     <div class="site-wrapper">
         <!-- Sidebar Navigation -->
-        <aside class="sidebar-nav">
+        <aside class="sidebar-nav" id="site-navigation">
             <a href="index.html" class="logo">
                 <div class="logo-mark">TG</div>
                 <span>TurnGate</span>
@@ -57,10 +75,10 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="https://github.com/Graph-COM/TurnGate" class="sidebar-link" target="_blank">
+                <a href="https://github.com/Graph-COM/TurnGate" class="sidebar-link" target="_blank" rel="noopener">
                     <i class="fab fa-github"></i> Code
                 </a>
-                <a href="https://arxiv.org/abs/2605.05630" class="sidebar-link" target="_blank">
+                <a href="https://arxiv.org/abs/2605.05630" class="sidebar-link" target="_blank" rel="noopener">
                     <i class="far fa-file-pdf"></i> Paper (arXiv)
                 </a>
             </div>
@@ -84,7 +102,7 @@
                     <h2 class="section-title">Case 1: Benign Technical Exploration</h2>
                     <p class="section-subtitle">A safe request for chemical properties and safety protocols.</p>
                     <div class="figure-container">
-                        <img src="figs/benign_example.png" alt="Benign trajectory" class="figure-img">
+                        <img src="figs/benign_example.png" alt="Benign TurnGate trajectory that remains safe across all turns" class="figure-img" loading="lazy" decoding="async">
                         <figcaption>
                             <strong>Figure: Benign interaction.</strong> Despite the use of technical chemistry terminology, the conversation remains focused on safe, educational content. TurnGate correctly allows the full dialogue to pass.
                         </figcaption>
@@ -99,7 +117,7 @@
                     <h2 class="section-title">Case 2: Distributed Malicious Intent</h2>
                     <p class="section-subtitle">An adaptive attack attempting to synthesize restricted capabilities.</p>
                     <div class="figure-container">
-                        <img src="figs/harmful_example.png" alt="Harmful trajectory" class="figure-img">
+                        <img src="figs/harmful_example.png" alt="Harmful TurnGate trajectory with distributed malicious intent" class="figure-img" loading="lazy" decoding="async">
                         <figcaption>
                             <strong>Figure: Harmful interaction.</strong> The attacker uses a multi-turn strategy to extract sensitive technical details. TurnGate identifies the <strong>closure turn</strong> (Turn 4) where the response would become harm-sufficient.
                         </figcaption>

@@ -17,6 +17,20 @@
         content="TurnGate: Detecting Malicious Intent in Multi-turn Dialogue. A turn-level monitor that identifies the earliest turn where interaction becomes sufficient for harm.">
     <meta name="keywords" content="LLM, safety, multi-turn attack, malicious intent, TurnGate, AI safety">
     <meta name="author" content="TurnGate Research Team">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://turn-gate.github.io/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="TurnGate">
+    <meta property="og:title" content="TurnGate: Detecting Malicious Intent in Multi-turn Dialogue">
+    <meta property="og:description"
+        content="A turn-level monitor for detecting the earliest harm-enabling point in multi-turn LLM conversations.">
+    <meta property="og:url" content="https://turn-gate.github.io/">
+    <meta property="og:image" content="https://turn-gate.github.io/figs/ood_benchmark.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TurnGate: Detecting Malicious Intent in Multi-turn Dialogue">
+    <meta name="twitter:description"
+        content="A turn-level monitor for detecting the earliest harm-enabling point in multi-turn LLM conversations.">
+    <meta name="twitter:image" content="https://turn-gate.github.io/figs/ood_benchmark.png">
     <title>TurnGate: Detecting Malicious Intent in Multi-turn Dialogue</title>
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
@@ -33,10 +47,69 @@
                 inlineMath: [['$', '$'], ['\\(', '\\)']],
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
                 processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            },
+            startup: {
+                pageReady: () => MathJax.startup.defaultPageReady()
             }
         };
     </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        (function loadMathJax(sourceIndex) {
+            const sources = [
+                'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js'
+            ];
+            const script = document.createElement('script');
+            let fallbackTimer;
+            script.id = 'MathJax-script';
+            script.async = true;
+            script.src = sources[sourceIndex];
+            script.onload = function () {
+                window.clearTimeout(fallbackTimer);
+            };
+            script.onerror = function () {
+                window.clearTimeout(fallbackTimer);
+                script.remove();
+                if (sourceIndex + 1 < sources.length) loadMathJax(sourceIndex + 1);
+            };
+            document.head.appendChild(script);
+            fallbackTimer = window.setTimeout(function () {
+                if (!window.MathJax || !window.MathJax.typesetPromise) {
+                    script.remove();
+                    if (sourceIndex + 1 < sources.length) loadMathJax(sourceIndex + 1);
+                }
+            }, 4500);
+        })(0);
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ScholarlyArticle",
+      "name": "TurnGate: Detecting Malicious Intent in Multi-turn Dialogue",
+      "headline": "TurnGate: Detecting Malicious Intent in Multi-turn Dialogue",
+      "description": "TurnGate is a turn-level monitor for detecting the earliest harm-enabling point in multi-turn LLM conversations.",
+      "datePublished": "2026-05",
+      "url": "https://turn-gate.github.io/",
+      "sameAs": [
+        "https://arxiv.org/abs/2605.05630",
+        "https://github.com/Graph-COM/TurnGate"
+      ],
+      "author": [
+        {"@type": "Person", "name": "Xinjie Shen"},
+        {"@type": "Person", "name": "Rongzhe Wei"},
+        {"@type": "Person", "name": "Peizhi Niu"},
+        {"@type": "Person", "name": "Haoyu Wang"},
+        {"@type": "Person", "name": "Ruihan Wu"},
+        {"@type": "Person", "name": "Eli Chien"},
+        {"@type": "Person", "name": "Bo Li"},
+        {"@type": "Person", "name": "Pin-Yu Chen"},
+        {"@type": "Person", "name": "Pan Li"}
+      ]
+    }
+    </script>
 </head>
 
 <body>
@@ -47,7 +120,7 @@
                 <div class="logo-mark">TG</div>
                 <span>TurnGate</span>
             </a>
-            <button class="nav-toggle" aria-label="Toggle navigation">
+            <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="site-navigation">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
@@ -55,7 +128,7 @@
 
     <div class="site-wrapper">
         <!-- Sidebar Navigation -->
-        <aside class="sidebar-nav">
+        <aside class="sidebar-nav" id="site-navigation">
             <a href="index.html" class="logo">
                 <div class="logo-mark">TG</div>
                 <span>TurnGate</span>
@@ -78,10 +151,10 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="https://github.com/Graph-COM/TurnGate" class="sidebar-link" target="_blank">
+                <a href="https://github.com/Graph-COM/TurnGate" class="sidebar-link" target="_blank" rel="noopener">
                     <i class="fab fa-github"></i> Code
                 </a>
-                <a href="https://arxiv.org/abs/2605.05630" class="sidebar-link" target="_blank">
+                <a href="https://arxiv.org/abs/2605.05630" class="sidebar-link" target="_blank" rel="noopener">
                     <i class="far fa-file-pdf"></i> Paper (arXiv)
                 </a>
             </div>
@@ -106,10 +179,10 @@
                         <sup>4</sup>NTU, <sup>5</sup>IBM Research, <sup>6</sup>Virtue AI
                     </div>
                     <div class="project-links">
-                        <a href="https://arxiv.org/abs/2605.05630" class="project-link primary" target="_blank">
+                        <a href="https://arxiv.org/abs/2605.05630" class="project-link primary" target="_blank" rel="noopener">
                             <i class="far fa-file-pdf"></i> Paper (arXiv)
                         </a>
-                        <a href="https://github.com/Graph-COM/TurnGate" class="project-link" target="_blank">
+                        <a href="https://github.com/Graph-COM/TurnGate" class="project-link" target="_blank" rel="noopener">
                             <i class="fab fa-github"></i> GitHub
                         </a>
                         <a href="comparison.html" class="project-link">
@@ -213,12 +286,12 @@
                         <h3 style="text-align: center; margin-bottom: 16px;">Example MTID Trajectories</h3>
                         <div class="grid-2" style="gap: 24px;">
                             <figure>
-                                <img src="figs/benign_example.png" alt="Benign MTID example" class="figure-img">
+                                <img src="figs/benign_example.png" alt="Benign MTID trajectory example from the TurnGate dataset" class="figure-img" loading="lazy" decoding="async">
                                 <figcaption><strong>Benign example.</strong> Sociological discussion of drug
                                     trafficking that remains non-operational.</figcaption>
                             </figure>
                             <figure>
-                                <img src="figs/harmful_example.png" alt="Harmful MTID example" class="figure-img">
+                                <img src="figs/harmful_example.png" alt="Harmful MTID trajectory example with closure turn annotation" class="figure-img" loading="lazy" decoding="async">
                                 <figcaption><strong>Harmful example.</strong> The conversation shifts to phishing
                                     intent; closure occurs at $t^*$ and triggers intervention.</figcaption>
                             </figure>
@@ -873,7 +946,13 @@
                     <p>
                         We model the interaction as a three-party dialogue among a user, a base assistant, and a
                         defender. At each turn $t$, the defender observes the full context:
-                        $$x_t = ((q_1, r_1), \ldots, (q_{t-1}, r_{t-1}), q_t, \tilde{r}_t)$$
+                    </p>
+                    <div class="math-display">
+                        \[
+                        x_t = ((q_1, r_1), \ldots, (q_{t-1}, r_{t-1}), q_t, \tilde{r}_t)
+                        \]
+                    </div>
+                    <p>
                         Crucially, the defender is <strong>response-aware</strong>: it inspects the assistant's
                         candidate response $\tilde{r}_t$ <em>before</em> delivery. This is essential because the model's
                         own technical revelations often determine whether the harm threshold is crossed.
@@ -883,7 +962,14 @@
                     <p>
                         We define the <strong>closure turn</strong> $t^*$ as the first turn where the interaction
                         becomes sufficient to realize a harmful objective $g$:
-                        $$t^*(\tau, g) = \min(\{t \in \{1, \ldots, T\} : \mathrm{Suff}(x_t, g) = 1\} \cup \{\infty\})$$
+                    </p>
+                    <div class="math-display">
+                        \[
+                        t^*(\tau, g) =
+                        \min\left(\{t \in \{1, \ldots, T\} : \mathrm{Suff}(x_t, g) = 1\} \cup \{\infty\}\right)
+                        \]
+                    </div>
+                    <p>
                         where $\mathrm{Suff}(x_t, g)$ is a binary sufficiency operator. The defender's goal is to match
                         this stopping time: $\eta_\pi = t^*$.
                     </p>
@@ -893,12 +979,13 @@
                         The quality of a defender is determined by the trajectory-level utility $J(\pi)$, which
                         explicitly balances safety and utility:
                     </p>
-                    <div class="article-abstract"
-                        style="margin-top: 16px; font-family: monospace; font-size: 16px; overflow-x: auto;">
-                        $$J(\pi) = \mathbb{E}\Big[ u_{\mathrm{ben}}\mathbf{1}[\text{benign}] +
+                    <div class="article-abstract math-card">
+                        \[
+                        J(\pi) = \mathbb{E}\Big[ u_{\mathrm{ben}}\mathbf{1}[\text{benign}] +
                         u_{\mathrm{hit}}\mathbf{1}[\text{timely}] - c_{\mathrm{fp}}\mathbf{1}[\text{FP}] -
                         c_{\mathrm{miss}}\mathbf{1}[\text{miss}] - c_{\mathrm{early}}(1-\phi)\mathbf{1}[\text{early}]
-                        \Big]$$
+                        \Big]
+                        \]
                     </div>
 
                     <h3>4. Turn-Level Process Rewards</h3>
@@ -906,18 +993,25 @@
                         To optimize $J(\pi)$, we decompose the trajectory-level utility into <strong>turn-level process
                             rewards</strong> $R_t$:
                     </p>
-                    <div class="article-abstract"
-                        style="margin-top: 16px; font-family: monospace; font-size: 16px; overflow-x: auto;">
-                        $$R_t = \begin{cases} u_{\mathrm{ben}}\mathbf{1}[t < t^\ast] -
-                            c_{\mathrm{miss}}\mathbf{1}[t=t^\ast], & \text{if } a_t=\text{PASS} \\
-                            u_{\mathrm{hit}}\mathbf{1}[t=t^\ast] - c_{\mathrm{early}}(1-\phi(t; t^\ast))\mathbf{1}[t <
-                            t^\ast] - c_{\mathrm{fp}}\mathbf{1}[t^\ast=\infty], & \text{if } a_t=\text{BLOCK}
-                            \end{cases}$$ </div>
-                            <p>
-                                We optimize TurnGate using Reinforcement Learning with Generalized Advantage Estimate
-                                (GAE) to propagate these rewards across turns, training the monitor to recognize the
-                                latent synthesis of restricted capability.
-                            </p>
+                    <div class="article-abstract math-card">
+                        \[
+                        R_t =
+                        \begin{cases}
+                        u_{\mathrm{ben}}\mathbf{1}[t < t^\ast]
+                        - c_{\mathrm{miss}}\mathbf{1}[t=t^\ast],
+                        & \text{if } a_t=\text{PASS} \\
+                        u_{\mathrm{hit}}\mathbf{1}[t=t^\ast]
+                        - c_{\mathrm{early}}(1-\phi(t; t^\ast))\mathbf{1}[t < t^\ast]
+                        - c_{\mathrm{fp}}\mathbf{1}[t^\ast=\infty],
+                        & \text{if } a_t=\text{BLOCK}
+                        \end{cases}
+                        \]
+                    </div>
+                    <p>
+                        We optimize TurnGate using Reinforcement Learning with Generalized Advantage Estimate
+                        (GAE) to propagate these rewards across turns, training the monitor to recognize the
+                        latent synthesis of restricted capability.
+                    </p>
                 </section>
 
                 <section id="citation" class="content-section reveal">

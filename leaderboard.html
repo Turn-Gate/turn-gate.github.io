@@ -13,7 +13,25 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TurnGate: Performance Leaderboard & Results</title>
+    <meta name="description"
+        content="TurnGate experimental results on MTID, including harmful-intent detection, benign pass-through, cross-domain generalization, and online robustness.">
+    <meta name="keywords" content="TurnGate results, MTID benchmark, AI safety leaderboard, multi-turn harmful intent detection">
+    <meta name="author" content="TurnGate Research Team">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://turn-gate.github.io/leaderboard.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="TurnGate">
+    <meta property="og:title" content="TurnGate Results: Performance Leaderboard">
+    <meta property="og:description"
+        content="Experimental results for TurnGate on MTID, cross-domain generalization, and online robustness.">
+    <meta property="og:url" content="https://turn-gate.github.io/leaderboard.html">
+    <meta property="og:image" content="https://turn-gate.github.io/figs/fs_vs_iteration.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TurnGate Results: Performance Leaderboard">
+    <meta name="twitter:description"
+        content="Experimental results for TurnGate on MTID, cross-domain generalization, and online robustness.">
+    <meta name="twitter:image" content="https://turn-gate.github.io/figs/fs_vs_iteration.png">
+    <title>TurnGate Results: Performance Leaderboard</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,10 +45,43 @@
                 inlineMath: [['$', '$'], ['\\(', '\\)']],
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
                 processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            },
+            startup: {
+                pageReady: () => MathJax.startup.defaultPageReady()
             }
         };
     </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        (function loadMathJax(sourceIndex) {
+            const sources = [
+                'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js'
+            ];
+            const script = document.createElement('script');
+            let fallbackTimer;
+            script.id = 'MathJax-script';
+            script.async = true;
+            script.src = sources[sourceIndex];
+            script.onload = function () {
+                window.clearTimeout(fallbackTimer);
+            };
+            script.onerror = function () {
+                window.clearTimeout(fallbackTimer);
+                script.remove();
+                if (sourceIndex + 1 < sources.length) loadMathJax(sourceIndex + 1);
+            };
+            document.head.appendChild(script);
+            fallbackTimer = window.setTimeout(function () {
+                if (!window.MathJax || !window.MathJax.typesetPromise) {
+                    script.remove();
+                    if (sourceIndex + 1 < sources.length) loadMathJax(sourceIndex + 1);
+                }
+            }, 4500);
+        })(0);
+    </script>
 </head>
 
 <body>
@@ -41,7 +92,7 @@
                 <div class="logo-mark">TG</div>
                 <span>TurnGate</span>
             </a>
-            <button class="nav-toggle" aria-label="Toggle navigation">
+            <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="site-navigation">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
@@ -49,7 +100,7 @@
 
     <div class="site-wrapper">
         <!-- Sidebar Navigation -->
-        <aside class="sidebar-nav">
+        <aside class="sidebar-nav" id="site-navigation">
             <a href="index.html" class="logo">
                 <div class="logo-mark">TG</div>
                 <span>TurnGate</span>
@@ -69,10 +120,10 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="https://github.com/Graph-COM/TurnGate" class="sidebar-link" target="_blank">
+                <a href="https://github.com/Graph-COM/TurnGate" class="sidebar-link" target="_blank" rel="noopener">
                     <i class="fab fa-github"></i> Code
                 </a>
-                <a href="https://arxiv.org/abs/2605.05630" class="sidebar-link" target="_blank">
+                <a href="https://arxiv.org/abs/2605.05630" class="sidebar-link" target="_blank" rel="noopener">
                     <i class="far fa-file-pdf"></i> Paper (arXiv)
                 </a>
             </div>
@@ -172,14 +223,14 @@
                             <h3>Adaptive Attack Robustness</h3>
                             <p>TurnGate remains substantially more robust in closed-loop online interaction against strong adaptive attackers. Even as the attacker budget increases, TurnGate maintains a lower ASR than all baselines.</p>
                             <div class="figure-container" style="margin-top: 20px;">
-                                <img src="figs/fs_vs_iteration.png" alt="Robustness iteration plot" class="figure-img">
+                                <img src="figs/fs_vs_iteration.png" alt="TurnGate adaptive attack robustness by iteration budget" class="figure-img" loading="lazy" decoding="async">
                             </div>
                         </div>
                         <div class="card">
                             <h3>OOD Generalization</h3>
                             <p>Evaluation at attacker iteration budget $i=5$ shows that TurnGate generalizes effectively to held-out risk categories, target models (Gemini-3.1-Pro), and different attacker pipelines.</p>
                             <div class="figure-container" style="margin-top: 20px;">
-                                <img src="figs/online_generalization.png" alt="OOD generalization plot" class="figure-img">
+                                <img src="figs/online_generalization.png" alt="TurnGate out-of-distribution generalization results" class="figure-img" loading="lazy" decoding="async">
                             </div>
                         </div>
                     </div>
